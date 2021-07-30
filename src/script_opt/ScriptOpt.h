@@ -4,21 +4,25 @@
 
 #pragma once
 
-#include <string>
 #include <optional>
+#include <string>
 
-#include "zeek/Func.h"
 #include "zeek/Expr.h"
+#include "zeek/Func.h"
 #include "zeek/Scope.h"
 
-namespace zeek { struct Options; }
+namespace zeek
+	{
+struct Options;
+	}
 
-namespace zeek::detail {
-
+namespace zeek::detail
+	{
 
 // Flags controlling what sorts of analysis to do.
 
-struct AnalyOpt {
+struct AnalyOpt
+	{
 	// Whether to analyze scripts.
 	bool activate = false;
 
@@ -80,39 +84,39 @@ struct AnalyOpt {
 	// analyzes nested records in depth.  Warning: with the current
 	// data structures this greatly increases analysis time.
 	int usage_issues = 0;
-};
+	};
 
 extern AnalyOpt analysis_options;
-
 
 class ProfileFunc;
 
 using ScriptFuncPtr = IntrusivePtr<ScriptFunc>;
 
 // Info we need for tracking an instance of a function.
-class FuncInfo {
+class FuncInfo
+	{
 public:
 	FuncInfo(ScriptFuncPtr func, ScopePtr scope, StmtPtr body, int priority);
 
-	ScriptFunc* Func() const		{ return func.get(); }
-	const ScriptFuncPtr& FuncPtr() const	{ return func; }
-	const ScopePtr& Scope() const		{ return scope; }
-	const StmtPtr& Body() const		{ return body; }
-	int Priority() const			{ return priority; }
-	const ProfileFunc* Profile() const	{ return pf.get(); }
-	std::shared_ptr<ProfileFunc> ProfilePtr() const	{ return pf; }
-	const std::string& SaveFile() const	{ return save_file; }
+	ScriptFunc* Func() const { return func.get(); }
+	const ScriptFuncPtr& FuncPtr() const { return func; }
+	const ScopePtr& Scope() const { return scope; }
+	const StmtPtr& Body() const { return body; }
+	int Priority() const { return priority; }
+	const ProfileFunc* Profile() const { return pf.get(); }
+	std::shared_ptr<ProfileFunc> ProfilePtr() const { return pf; }
+	const std::string& SaveFile() const { return save_file; }
 
-	void SetBody(StmtPtr new_body)	{ body = std::move(new_body); }
+	void SetBody(StmtPtr new_body) { body = std::move(new_body); }
 	void SetProfile(std::shared_ptr<ProfileFunc> _pf);
-	void SetSaveFile(std::string _sf)	{ save_file = std::move(_sf); }
+	void SetSaveFile(std::string _sf) { save_file = std::move(_sf); }
 
 	// The following provide a way of marking FuncInfo's as
 	// should-be-skipped for script optimization, generally because
 	// the function body has a property that a given script optimizer
 	// doesn't know how to deal with.  Defaults to don't-skip.
-	bool ShouldSkip() const		{ return skip; }
-	void SetSkip(bool should_skip)	{ skip = should_skip; }
+	bool ShouldSkip() const { return skip; }
+	void SetSkip(bool should_skip) { skip = should_skip; }
 
 protected:
 	ScriptFuncPtr func;
@@ -127,8 +131,7 @@ protected:
 	// If we're saving this function in a file, this is the name
 	// of the file to use.
 	std::string save_file;
-};
-
+	};
 
 // We track which functions are definitely not recursive.  We do this
 // as the negative, rather than tracking functions known to be recursive,
@@ -147,7 +150,6 @@ extern const FuncInfo* analyze_global_stmts(Stmt* stmts);
 // Analyze all of the parsed scripts collectively for optimization.
 extern void analyze_scripts();
 
-
 // Used for C++-compiled scripts to signal their presence, by setting this
 // to a non-empty value.
 extern void (*CPP_init_hook)();
@@ -156,5 +158,4 @@ extern void (*CPP_init_hook)();
 // called after parsing and BiF initialization, but before zeek_init.
 extern void (*CPP_activation_hook)();
 
-
-} // namespace zeek::detail
+	} // namespace zeek::detail

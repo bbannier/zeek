@@ -1,22 +1,20 @@
 // See the file "COPYING" in the main distribution directory for copyright.
 
 #include <errno.h>
-#include <unistd.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "zeek/script_opt/CPP/Compile.h"
 
-
-namespace zeek::detail {
+namespace zeek::detail
+	{
 
 using namespace std;
 
-
-CPPCompile::CPPCompile(vector<FuncInfo>& _funcs, ProfileFuncs& _pfs,
-                       const string& gen_name, const string& _addl_name,
-                       CPPHashManager& _hm, bool _update, bool _standalone)
-: funcs(_funcs), pfs(_pfs), hm(_hm),
-  update(_update), standalone(_standalone)
+CPPCompile::CPPCompile(vector<FuncInfo>& _funcs, ProfileFuncs& _pfs, const string& gen_name,
+                       const string& _addl_name, CPPHashManager& _hm, bool _update,
+                       bool _standalone)
+	: funcs(_funcs), pfs(_pfs), hm(_hm), update(_update), standalone(_standalone)
 	{
 	addl_name = _addl_name;
 	bool is_addl = hm.IsAppend();
@@ -59,8 +57,7 @@ CPPCompile::CPPCompile(vector<FuncInfo>& _funcs, ProfileFuncs& _pfs,
 		auto addl_f = fopen(addl_name.c_str(), "w");
 		if ( ! addl_f )
 			{
-			reporter->Error("can't open C++ additional file %s",
-			                addl_name.c_str());
+			reporter->Error("can't open C++ additional file %s", addl_name.c_str());
 			exit(1);
 			}
 
@@ -251,16 +248,14 @@ void CPPCompile::RegisterCompiledBody(const string& f)
 		// same binary).
 		h = merge_p_hashes(h, p_hash(cf_locs[f]));
 
-	auto init = string("register_body__CPP(make_intrusive<") +
-			f + "_cl>(\"" + f + "\"), " + Fmt(p) + ", " +
-			Fmt(h) + ", " + events + ");";
+	auto init = string("register_body__CPP(make_intrusive<") + f + "_cl>(\"" + f + "\"), " +
+	            Fmt(p) + ", " + Fmt(h) + ", " + events + ");";
 
 	AddInit(names_to_bodies[f], init);
 
 	if ( update )
 		{
-		fprintf(hm.HashFile(), "func\n%s%s\n",
-		        scope_prefix(addl_tag).c_str(), f.c_str());
+		fprintf(hm.HashFile(), "func\n%s%s\n", scope_prefix(addl_tag).c_str(), f.c_str());
 		fprintf(hm.HashFile(), "%llu\n", h);
 		}
 	}
@@ -354,4 +349,4 @@ bool CPPCompile::IsCompilable(const FuncInfo& func)
 	return is_CPP_compilable(func.Profile());
 	}
 
-} // zeek::detail
+	} // zeek::detail

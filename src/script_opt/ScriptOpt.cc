@@ -1,23 +1,23 @@
 // See the file "COPYING" in the main distribution directory for copyright.
 
-#include "zeek/Options.h"
-#include "zeek/Reporter.h"
-#include "zeek/module_util.h"
+#include "zeek/script_opt/ScriptOpt.h"
+
 #include "zeek/Desc.h"
 #include "zeek/EventHandler.h"
 #include "zeek/EventRegistry.h"
-#include "zeek/script_opt/ScriptOpt.h"
-#include "zeek/script_opt/ProfileFunc.h"
-#include "zeek/script_opt/Inline.h"
-#include "zeek/script_opt/Reduce.h"
-#include "zeek/script_opt/GenRDs.h"
-#include "zeek/script_opt/UseDefs.h"
+#include "zeek/Options.h"
+#include "zeek/Reporter.h"
+#include "zeek/module_util.h"
 #include "zeek/script_opt/CPP/Compile.h"
 #include "zeek/script_opt/CPP/Func.h"
+#include "zeek/script_opt/GenRDs.h"
+#include "zeek/script_opt/Inline.h"
+#include "zeek/script_opt/ProfileFunc.h"
+#include "zeek/script_opt/Reduce.h"
+#include "zeek/script_opt/UseDefs.h"
 
-
-namespace zeek::detail {
-
+namespace zeek::detail
+	{
 
 AnalyOpt analysis_options;
 
@@ -31,10 +31,8 @@ static std::vector<FuncInfo> funcs;
 
 static ZAMCompiler* ZAM = nullptr;
 
-
-void optimize_func(ScriptFunc* f, std::shared_ptr<ProfileFunc> pf,
-			ScopePtr scope, StmtPtr& body,
-			AnalyOpt& analysis_options)
+void optimize_func(ScriptFunc* f, std::shared_ptr<ProfileFunc> pf, ScopePtr scope, StmtPtr& body,
+                   AnalyOpt& analysis_options)
 	{
 	if ( reporter->Errors() > 0 )
 		return;
@@ -42,8 +40,7 @@ void optimize_func(ScriptFunc* f, std::shared_ptr<ProfileFunc> pf,
 	if ( ! analysis_options.activate )
 		return;
 
-	if ( analysis_options.only_func &&
-	     *analysis_options.only_func != f->Name() )
+	if ( analysis_options.only_func && *analysis_options.only_func != f->Name() )
 		return;
 
 	if ( analysis_options.only_func )
@@ -145,8 +142,7 @@ void optimize_func(ScriptFunc* f, std::shared_ptr<ProfileFunc> pf,
 		body = new_body;
 		}
 
-	int new_frame_size =
-		scope->Length() + rc->NumTemps() + rc->NumNewLocals();
+	int new_frame_size = scope->Length() + rc->NumTemps() + rc->NumNewLocals();
 
 	if ( new_frame_size > f->FrameSize() )
 		f->SetFrameSize(new_frame_size);
@@ -154,24 +150,22 @@ void optimize_func(ScriptFunc* f, std::shared_ptr<ProfileFunc> pf,
 	pop_scope();
 	}
 
-
-FuncInfo::FuncInfo(ScriptFuncPtr _func, ScopePtr _scope, StmtPtr _body,
-                   int _priority)
-		: func(std::move(_func)), scope(std::move(_scope)),
-		  body(std::move(_body)), priority(_priority)
-	{}
+FuncInfo::FuncInfo(ScriptFuncPtr _func, ScopePtr _scope, StmtPtr _body, int _priority)
+	: func(std::move(_func)), scope(std::move(_scope)), body(std::move(_body)), priority(_priority)
+	{
+	}
 
 void FuncInfo::SetProfile(std::shared_ptr<ProfileFunc> _pf)
-	{ pf = std::move(_pf); }
+	{
+	pf = std::move(_pf);
+	}
 
 void analyze_func(ScriptFuncPtr f)
 	{
-	if ( analysis_options.only_func &&
-	     *analysis_options.only_func != f->Name() )
+	if ( analysis_options.only_func && *analysis_options.only_func != f->Name() )
 		return;
 
-	funcs.emplace_back(f, f->GetScope(), f->CurrentBody(),
-	                   f->CurrentPriority());
+	funcs.emplace_back(f, f->GetScope(), f->CurrentBody(), f->CurrentPriority());
 	}
 
 const FuncInfo* analyze_global_stmts(Stmt* stmts)
@@ -222,8 +216,7 @@ void analyze_scripts()
 		check_env_opt("ZEEK_ADD_CPP", analysis_options.add_CPP);
 		check_env_opt("ZEEK_UPDATE_CPP", analysis_options.update_CPP);
 		check_env_opt("ZEEK_GEN_CPP", analysis_options.gen_CPP);
-		check_env_opt("ZEEK_GEN_STANDALONE_CPP",
-		              analysis_options.gen_standalone_CPP);
+		check_env_opt("ZEEK_GEN_STANDALONE_CPP", analysis_options.gen_standalone_CPP);
 		check_env_opt("ZEEK_COMPILE_ALL", analysis_options.compile_all);
 		check_env_opt("ZEEK_REPORT_CPP", analysis_options.report_CPP);
 		check_env_opt("ZEEK_USE_CPP", analysis_options.use_CPP);
@@ -275,17 +268,15 @@ void analyze_scripts()
 				analysis_options.only_func = zo;
 			}
 
-		if ( analysis_options.only_func ||
-		     analysis_options.optimize_AST ||
+		if ( analysis_options.only_func || analysis_options.optimize_AST ||
 		     analysis_options.usage_issues > 0 )
 			analysis_options.activate = true;
 
 		did_init = true;
 		}
 
-	if ( ! analysis_options.activate && ! analysis_options.inliner &&
-	     ! generating_CPP && ! analysis_options.report_CPP &&
-	     ! analysis_options.use_CPP )
+	if ( ! analysis_options.activate && ! analysis_options.inliner && ! generating_CPP &&
+	     ! analysis_options.report_CPP && ! analysis_options.use_CPP )
 		// Avoid profiling overhead.
 		return;
 
@@ -323,8 +314,8 @@ void analyze_scripts()
 					specific = " - specific";
 				}
 
-			printf("script function %s (hash %llu%s): %s\n",
-				name, hash, specific, have ? "yes" : "no");
+			printf("script function %s (hash %llu%s): %s\n", name, hash, specific,
+			       have ? "yes" : "no");
 
 			if ( have )
 				already_reported.insert(hash);
@@ -335,8 +326,7 @@ void analyze_scripts()
 		for ( const auto& s : compiled_scripts )
 			if ( already_reported.count(s.first) == 0 )
 				{
-				printf("%s body (hash %llu)\n",
-					s.second.body->Name().c_str(), s.first);
+				printf("%s body (hash %llu)\n", s.second.body->Name().c_str(), s.first);
 				++addl;
 				}
 
@@ -397,16 +387,14 @@ void analyze_scripts()
 		{
 		const auto hash_name = hash_dir + "CPP-hashes";
 
-		auto hm = std::make_unique<CPPHashManager>(hash_name.c_str(),
-						analysis_options.add_CPP);
+		auto hm = std::make_unique<CPPHashManager>(hash_name.c_str(), analysis_options.add_CPP);
 
 		if ( ! analysis_options.gen_CPP )
 			{
 			for ( auto& func : funcs )
 				{
 				auto hash = func.Profile()->HashVal();
-				if ( compiled_scripts.count(hash) > 0 ||
-				     hm->HasHash(hash) )
+				if ( compiled_scripts.count(hash) > 0 || hm->HasHash(hash) )
 					func.SetSkip(true);
 				}
 
@@ -419,16 +407,16 @@ void analyze_scripts()
 		const auto addl_name = hash_dir + "CPP-gen-addl.h";
 
 		CPPCompile cpp(funcs, *pfs, gen_name, addl_name, *hm,
-			       analysis_options.gen_CPP ||
-			       analysis_options.update_CPP,
-			       analysis_options.gen_standalone_CPP);
+		               analysis_options.gen_CPP || analysis_options.update_CPP,
+		               analysis_options.gen_standalone_CPP);
 
 		exit(0);
 		}
 
 	if ( analysis_options.usage_issues > 0 && analysis_options.optimize_AST )
 		{
-		fprintf(stderr, "warning: \"-O optimize-AST\" option is incompatible with -u option, deactivating optimization\n");
+		fprintf(stderr, "warning: \"-O optimize-AST\" option is incompatible with -u option, "
+		                "deactivating optimization\n");
 		analysis_options.optimize_AST = false;
 		}
 
@@ -470,9 +458,9 @@ void analyze_scripts()
 				ODesc d;
 				f.ScriptFunc()->AddLocation(&d);
 				printf("%s cannot be compiled due to use of \"when\" statement (%s)\n",
-					f.ScriptFunc()->Name(), d.Description());
+				       f.ScriptFunc()->Name(), d.Description());
 				}
-#endif	// NOT_YET
+#endif // NOT_YET
 			}
 		}
 
@@ -540,8 +528,7 @@ void analyze_scripts()
 		{
 		auto func = f.Func();
 
-		if ( ! analysis_options.compile_all &&
-		     inl && inl->WasInlined(func) &&
+		if ( ! analysis_options.compile_all && inl && inl->WasInlined(func) &&
 		     func_used_indirectly.count(func) == 0 )
 			// No need to compile as it won't be
 			// called directly.
@@ -552,11 +539,9 @@ void analyze_scripts()
 			continue;
 
 		auto new_body = f.Body();
-		optimize_func(func, f.ProfilePtr(), f.Scope(), new_body,
-		              analysis_options);
+		optimize_func(func, f.ProfilePtr(), f.Scope(), new_body, analysis_options);
 		f.SetBody(new_body);
 		}
 	}
 
-
-} // namespace zeek::detail
+	} // namespace zeek::detail

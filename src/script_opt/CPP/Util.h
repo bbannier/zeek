@@ -6,11 +6,18 @@
 
 #include "zeek/script_opt/ProfileFunc.h"
 
-namespace zeek::detail {
+namespace zeek::detail
+	{
 
 // Conversions to strings.
-inline std::string Fmt(int i)		{ return std::to_string(i); }
-inline std::string Fmt(p_hash_type u)	{ return std::to_string(u) + "ULL"; }
+inline std::string Fmt(int i)
+	{
+	return std::to_string(i);
+	}
+inline std::string Fmt(p_hash_type u)
+	{
+	return std::to_string(u) + "ULL";
+	}
 extern std::string Fmt(double d);
 
 // Returns the prefix for the scoping used by the compiler.
@@ -27,4 +34,4 @@ extern bool is_CPP_compilable(const ProfileFunc* pf);
 extern void lock_file(const std::string& fname, FILE* f);
 extern void unlock_file(const std::string& fname, FILE* f);
 
-} // zeek::detail
+	} // zeek::detail
