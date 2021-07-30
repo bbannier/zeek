@@ -1,8 +1,8 @@
 #pragma once
 
-#include <sys/types.h>
-#include <netinet/tcp.h>
 #include <string>
+
+#include "zeek/net_util.h"
 
 namespace zeek::analyzer::tcp
 	{
