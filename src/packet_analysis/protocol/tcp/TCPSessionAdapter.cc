@@ -180,7 +180,7 @@ static uint64_t get_relative_seq(const analyzer::tcp::TCP_Endpoint* endpoint,
                                  uint32_t cur_base, uint32_t last,
                                  uint32_t wraps, bool* underflow)
 	{
-	int32_t delta = seq_delta(cur_base, last);
+	int64_t delta = seq_delta(cur_base, last);
 
 	if ( delta < 0 )
 		{
@@ -304,14 +304,18 @@ static void update_window(analyzer::tcp::TCP_Endpoint* endpoint, unsigned int wi
 	     endpoint->state != analyzer::tcp::TCP_ENDPOINT_CLOSED &&
 	     endpoint->state != analyzer::tcp::TCP_ENDPOINT_RESET )
 		{
+		int64_t base_delta = seq_delta(base_seq, endpoint->window_seq);
+		int64_t ack_delta = seq_delta(ack_seq, endpoint->window_ack_seq);
+
 		// ### Decide whether to accept new window based on Active
 		// Mapping policy.
-		if ( seq_delta(base_seq, endpoint->window_seq) >= 0 &&
-		     seq_delta(ack_seq, endpoint->window_ack_seq) >= 0 )
+		if ( ( base_delta >= 0 || base_delta < -TOO_LARGE_SEQ_DELTA ) &&
+		     ( ack_delta >= 0 || ack_delta < -TOO_LARGE_SEQ_DELTA ) )
 			{
+//			printf("checking recision\n");
 			uint32_t new_edge = ack_seq + window;
 			uint32_t old_edge = endpoint->window_ack_seq + endpoint->window;
-			int32_t advance = seq_delta(new_edge, old_edge);
+			int64_t advance = seq_delta(new_edge, old_edge);
 
 			if ( advance < 0 )
 				{
@@ -477,7 +481,7 @@ static void init_peer(analyzer::tcp::TCP_Endpoint* peer, analyzer::tcp::TCP_Endp
 
 static void update_ack_seq(analyzer::tcp::TCP_Endpoint* endpoint, uint32_t ack_seq)
 	{
-	int32_t delta_ack = seq_delta(ack_seq, endpoint->AckSeq());
+	int64_t delta_ack = seq_delta(ack_seq, endpoint->AckSeq());
 
 	if ( ack_seq == 0 && delta_ack > TOO_LARGE_SEQ_DELTA )
 		// More likely that this is a broken ack than a
@@ -490,10 +494,10 @@ static void update_ack_seq(analyzer::tcp::TCP_Endpoint* endpoint, uint32_t ack_s
 
 // Returns the difference between last_seq and the last sequence
 // seen by the endpoint (may be negative).
-static int32_t update_last_seq(analyzer::tcp::TCP_Endpoint* endpoint, uint32_t last_seq,
+static int64_t update_last_seq(analyzer::tcp::TCP_Endpoint* endpoint, uint32_t last_seq,
                                analyzer::tcp::TCP_Flags flags, int len)
 	{
-	int32_t delta_last = seq_delta(last_seq, endpoint->LastSeq());
+	int64_t delta_last = seq_delta(last_seq, endpoint->LastSeq());
 
 	if ( (flags.SYN() || flags.RST()) &&
 	     (delta_last > TOO_LARGE_SEQ_DELTA ||
@@ -635,7 +639,7 @@ void TCPSessionAdapter::Process(bool is_orig, const struct tcphdr* tp, int len,
 			}
 		}
 
-	int32_t delta_last = update_last_seq(endpoint, seq_one_past_segment, flags, len);
+	int64_t delta_last = update_last_seq(endpoint, seq_one_past_segment, flags, len);
 	endpoint->last_time = run_state::current_timestamp;
 
 	bool do_close;
@@ -996,7 +1000,7 @@ void TCPSessionAdapter::UpdateEstablishedState(
 	}
 
 void TCPSessionAdapter::UpdateClosedState(double t, analyzer::tcp::TCP_Endpoint* endpoint,
-                                          int32_t delta_last, analyzer::tcp::TCP_Flags flags,
+                                          int64_t delta_last, analyzer::tcp::TCP_Flags flags,
                                           bool& do_close)
 	{
 	if ( flags.SYN() )
@@ -1043,7 +1047,7 @@ void TCPSessionAdapter::UpdateResetState(int len, analyzer::tcp::TCP_Flags flags
 void TCPSessionAdapter::UpdateStateMachine(
 	double t, analyzer::tcp::TCP_Endpoint* endpoint, analyzer::tcp::TCP_Endpoint* peer,
 	uint32_t base_seq, uint32_t ack_seq,
-	int len, int32_t delta_last, bool is_orig, analyzer::tcp::TCP_Flags flags,
+	int len, int64_t delta_last, bool is_orig, analyzer::tcp::TCP_Flags flags,
 	bool& do_close, bool& gen_event)
 	{
 	do_close = false;	// whether to report the connection as closed

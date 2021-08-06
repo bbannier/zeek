@@ -194,7 +194,7 @@ bool TCPStats_Endpoint::DataSent(double /* t */, uint64_t seq, int len, int capl
 
 	uint64_t top_seq = seq + len;
 
-	int32_t data_in_flight = seq_delta(endp->LastSeq(), endp->AckSeq());
+	int64_t data_in_flight = seq_delta(endp->LastSeq(), endp->AckSeq());
 	if ( data_in_flight < 0 )
 		data_in_flight = 0;
 
@@ -207,7 +207,7 @@ bool TCPStats_Endpoint::DataSent(double /* t */, uint64_t seq, int len, int capl
 			num_rxmit_bytes += len;
 			}
 
-		DEBUG_MSG("%.6f rexmit %" PRIu64" + %d <= %" PRIu64" data_in_flight = %d\n",
+		DEBUG_MSG("%.6f rexmit %" PRIu64" + %d <= %" PRIu64" data_in_flight = %lld\n",
 		          run_state::network_time, seq, len, max_top_seq, data_in_flight);
 
 		if ( tcp_rexmit )

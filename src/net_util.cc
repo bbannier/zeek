@@ -206,4 +206,11 @@ uint32_t extract_uint32(const u_char* data)
 	return val;
 	}
 
+int64_t seq_delta(uint32_t a, uint32_t b)
+	{
+	int64_t v = static_cast<int64_t>(a)-static_cast<int64_t>(b);
+	printf("delta: %u %u %lld\n", a, b, v);
+	return v;
+	}
+
 } // namespace zeek

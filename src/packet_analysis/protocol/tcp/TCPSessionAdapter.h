@@ -99,7 +99,7 @@ protected:
 	void UpdateStateMachine(double t,
 			analyzer::tcp::TCP_Endpoint* endpoint, analyzer::tcp::TCP_Endpoint* peer,
 			uint32_t base_seq, uint32_t ack_seq,
-			int len, int32_t delta_last, bool is_orig, analyzer::tcp::TCP_Flags flags,
+			int len, int64_t delta_last, bool is_orig, analyzer::tcp::TCP_Flags flags,
 			bool& do_close, bool& gen_event);
 
 	void UpdateInactiveState(double t,
@@ -116,7 +116,7 @@ protected:
 				    analyzer::tcp::TCP_Flags flags, bool& do_close, bool& gen_event);
 
 	void UpdateClosedState(double t, analyzer::tcp::TCP_Endpoint* endpoint,
-				int32_t delta_last, analyzer::tcp::TCP_Flags flags,
+				int64_t delta_last, analyzer::tcp::TCP_Flags flags,
 				bool& do_close);
 
 	void UpdateResetState(int len, analyzer::tcp::TCP_Flags flags);

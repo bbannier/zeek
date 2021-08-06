@@ -191,10 +191,7 @@ inline bool seq_between(uint32_t a, uint32_t b, uint32_t c)
 	}
 
 // Returns a - b, adjusted for sequence wraparound.
-inline int32_t seq_delta(uint32_t a, uint32_t b)
-	{
-	return a - b;
-	}
+extern int64_t seq_delta(uint32_t a, uint32_t b);
 
 // Returns 'A', 'B', 'C' or 'D'
 extern char addr_to_class(uint32_t addr);
