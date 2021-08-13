@@ -99,7 +99,7 @@ function extract_ip_addresses(input: string, check_wrapping: bool &default=F): s
 			{
 			local p1 = parts[i-1];
 			local p3 = parts[i+1];
-                        if ( ! check_wrapping ||
+			if ( ! check_wrapping ||
 			       ( p1[-1] == "\[" && p3[0] == "\]" ) ||
 			       ( p1[-1] == "\(" && p3[0] == "\)" ) ||
 			       ( p1[-1] == "\{" && p3[0] == "\}" ) ||
