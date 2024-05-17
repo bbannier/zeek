@@ -7,6 +7,7 @@
 
 #include "zeek/Event.h"
 #include "zeek/ID.h"
+#include "zeek/IPAddr.h"
 #include "zeek/NetVar.h"
 #include "zeek/Reporter.h"
 #include "zeek/Scope.h"
