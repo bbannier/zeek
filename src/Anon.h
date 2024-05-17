@@ -28,9 +28,9 @@ enum ip_addr_anonymization_class_t {
 enum ip_addr_anonymization_method_t {
     KEEP_ORIG_ADDR,
     SEQUENTIALLY_NUMBERED,
-    RANDOM_MD5,
+    RANDOM,
     PREFIX_PRESERVING_A50,
-    PREFIX_PRESERVING_MD5,
+    PREFIX_PRESERVING,
     NUM_ADDR_ANONYMIZATION_METHODS,
 };
 
@@ -64,12 +64,12 @@ protected:
     ipaddr32_t seq;
 };
 
-class AnonymizeIPAddr_RandomMD5 : public AnonymizeIPAddr {
+class AnonymizeIPAddr_Random : public AnonymizeIPAddr {
 public:
     ipaddr32_t anonymize(ipaddr32_t addr) override;
 };
 
-class AnonymizeIPAddr_PrefixMD5 : public AnonymizeIPAddr {
+class AnonymizeIPAddr_Prefix : public AnonymizeIPAddr {
 public:
     ipaddr32_t anonymize(ipaddr32_t addr) override;
 

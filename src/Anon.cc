@@ -7,7 +7,6 @@
 
 #include "zeek/Event.h"
 #include "zeek/ID.h"
-#include "zeek/IPAddr.h"
 #include "zeek/NetVar.h"
 #include "zeek/Reporter.h"
 #include "zeek/Scope.h"
@@ -86,7 +85,7 @@ ipaddr32_t AnonymizeIPAddr_Seq::anonymize(ipaddr32_t /* input */) {
     return htonl(seq);
 }
 
-ipaddr32_t AnonymizeIPAddr_RandomMD5::anonymize(ipaddr32_t input) {
+ipaddr32_t AnonymizeIPAddr_Random::anonymize(ipaddr32_t input) {
     uint8_t digest[16];
     ipaddr32_t output = 0;
 
@@ -103,7 +102,7 @@ ipaddr32_t AnonymizeIPAddr_RandomMD5::anonymize(ipaddr32_t input) {
 //
 // http://www.imconf.net/imw-2001/proceedings.html
 
-ipaddr32_t AnonymizeIPAddr_PrefixMD5::anonymize(ipaddr32_t input) {
+ipaddr32_t AnonymizeIPAddr_Prefix::anonymize(ipaddr32_t input) {
     uint8_t digest[16];
     ipaddr32_t prefix_mask = 0xffffffff;
     input = ntohl(input);
@@ -326,9 +325,9 @@ static TableValPtr anon_preserve_other_addr;
 void init_ip_addr_anonymizers() {
     ip_anonymizer[KEEP_ORIG_ADDR] = nullptr;
     ip_anonymizer[SEQUENTIALLY_NUMBERED] = new AnonymizeIPAddr_Seq();
-    ip_anonymizer[RANDOM_MD5] = new AnonymizeIPAddr_RandomMD5();
+    ip_anonymizer[RANDOM] = new AnonymizeIPAddr_Random();
     ip_anonymizer[PREFIX_PRESERVING_A50] = new AnonymizeIPAddr_A50();
-    ip_anonymizer[PREFIX_PRESERVING_MD5] = new AnonymizeIPAddr_PrefixMD5();
+    ip_anonymizer[PREFIX_PRESERVING] = new AnonymizeIPAddr_Prefix();
 
     auto id = global_scope()->Find("preserve_orig_addr");
 
