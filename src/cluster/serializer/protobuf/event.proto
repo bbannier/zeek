@@ -1,0 +1,14 @@
+syntax = "proto3";
+package zeek.protobuf;
+
+import "zeek.proto";
+
+message Subscribe {
+  repeated string topic = 1;
+}
+
+message Event {
+  string name = 1;
+  repeated zeek.protobuf.Value arg = 2;
+  map<uint64, zeek.protobuf.Value> metadata = 3;
+}

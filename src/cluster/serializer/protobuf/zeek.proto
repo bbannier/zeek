@@ -1,0 +1,74 @@
+syntax = "proto3";
+package zeek.protobuf;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+message Value {
+  oneof kind {
+    Scalar scalar = 1;
+    Record record = 2;
+    Vector vector = 3;
+    Table table = 4;
+  }
+}
+
+message Scalar {
+  oneof kind {
+    google.protobuf.NullValue none = 1;
+    bool boolean = 2;
+    uint64 count = 3;
+    int64 int = 4;
+    double real = 5;
+    google.protobuf.Duration timespan = 6;
+    google.protobuf.Timestamp timestamp = 7;
+    string string = 8;
+    string enum_value = 9;
+    Address address = 10;
+    Port port = 11;
+    bytes pattern = 12;
+    Subnet subnet = 13;
+  }
+}
+
+message Vector {
+  repeated Value values = 1;
+}
+
+message Table {
+  repeated TableEntry values = 1;
+}
+
+message TableEntry {
+  repeated Value keys = 1;
+  Value value = 2;
+}
+
+message Port {
+  uint32 value = 1;
+  Protocol protocol = 2;
+}
+
+enum Protocol {
+  PROTOCOL_UNKNOWN = 0;
+  TCP = 1;
+  UDP = 2;
+  ICMP = 3;
+}
+
+message Record {
+  map<string, Value> fields = 1;
+}
+
+message Address {
+  uint32 a1 = 1;
+  uint32 a2 = 2;
+  uint32 a3 = 3;
+  uint32 a4 = 4;
+}
+
+message Subnet {
+  Address prefix = 1;
+  uint32 length = 2;
+}

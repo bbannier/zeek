@@ -1,0 +1,20 @@
+syntax = "proto3";
+package zeek.protobuf;
+
+import "zeek.proto";
+
+message LogWriteBatch {
+  LogWriteHeader header = 1;
+  repeated LogRecord records = 2;
+}
+
+message LogWriteHeader {
+  string stream = 1;
+  string writer = 2;
+  string filter = 3;
+  string path = 4;
+}
+
+message LogRecord {
+  repeated Value fields = 1;
+}

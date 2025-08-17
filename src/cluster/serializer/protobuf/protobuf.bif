@@ -1,0 +1,26 @@
+%%{
+#include <cassert>
+
+#include <zeek/Val.h>
+#include <zeek/ZeekString.h>
+
+#include "protobuf.h"
+
+%%}
+
+module Protobuf;
+
+function serialize%(value: any%): string %{
+	auto proto = zeek::protobuf::serialize(*value);
+	return make_intrusive<StringVal>(proto.SerializeAsString());
+%}
+
+function deserialize%(proto: string, target_type: any%): any %{
+    auto type_ = target_type->AsTypeVal()->GetType()->AsTypeType()->GetType();
+
+    zeek::protobuf::Value value;
+    if ( ! value.ParseFromString(proto->ToStdStringView()) )
+        return {};
+
+    return zeek::protobuf::deserialize(value, type_);
+%}
