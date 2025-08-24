@@ -5999,7 +5999,7 @@ export {
 	## The event serializer to use by the cluster backend.
 	##
 	## This currently has no effect for backend BROKER.
-	const event_serializer = Cluster::EVENT_SERIALIZER_PROTOBUF &redef;
+	const event_serializer = Cluster::EVENT_SERIALIZER_BROKER_BIN_V1 &redef;
 
 	## The log serializer to use by the backend.
 	##
