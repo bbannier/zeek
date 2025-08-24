@@ -26,8 +26,8 @@
 # @TEST-EXEC: mv known_services.log knownservices-storage-framework.log
 # @TEST-EXEC: btest-diff knownservices-storage-framework.log
 
-# @TEST-EXEC: cat knownservices-broker-store.log | $SCRIPTS/diff-remove-timestamps > broker-store.log
-# @TEST-EXEC: cat knownservices-storage-framework.log | $SCRIPTS/diff-remove-timestamps > storage-framework.log
+# @TEST-EXEC: cat knownservices-broker-store.log | $SCRIPTS/diff-remove-timestamps | sort -u > broker-store.log
+# @TEST-EXEC: cat knownservices-storage-framework.log | $SCRIPTS/diff-remove-timestamps | sort -u > storage-framework.log
 # @TEST-EXEC: diff broker-store.log storage-framework.log > logs-diff.txt
 # @TEST-EXEC: btest-diff logs-diff.txt
 

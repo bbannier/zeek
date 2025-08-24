@@ -12,7 +12,7 @@ export {
 	## to add relevant fields to it.
 	type BackendOptions: record {
 		## The serializer used for converting Zeek data.
-		serializer: Storage::Serializer &default=Storage::STORAGE_SERIALIZER_JSON;
+		serializer: Storage::Serializer &default=Storage::STORAGE_SERIALIZER_PROTOBUF;
 
 		## Sets the backend into forced-synchronous mode. All operations will run
 		## in synchronous mode, even if the async functions are called.  This
