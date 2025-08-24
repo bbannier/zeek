@@ -35,8 +35,11 @@ bool ProtobufClusterEventSerializer::SerializeEvent(byte_buffer& buf, const Even
 
     std::string data;
 
-    if ( ! serialized.SerializeToString(&data) )
+    if ( ! serialized.SerializeToString(&data) ) {
+        reporter->Warning("unable to serialize event '%.*s'", static_cast<int>(event.HandlerName().size()),
+                          event.HandlerName().data());
         return false;
+    }
 
     std::ranges::transform(data, std::back_inserter(buf), [](char c) { return std::byte(c); });
 
@@ -51,29 +54,35 @@ std::optional<Event> ProtobufClusterEventSerializer::UnserializeEvent(byte_buffe
 
     auto* handler = event_registry->Lookup(deserialized.name());
     if ( ! handler ) {
+        reporter->Warning("skipping serialization of unknown event '%s'", deserialized.name().c_str());
         return {};
     }
 
     // Deserialize arguments.
     const auto& func = handler->GetFunc();
     if ( ! func ) {
+        reporter->Warning("skipping serialization of event '%s' with unknown signature", deserialized.name().c_str());
         return {};
     }
     auto* fn = func.get();
     if ( ! fn ) {
+        reporter->Warning("skipping serialization of event '%s' with unknown signature", deserialized.name().c_str());
         return {};
     }
     const auto& ty = fn->GetType();
     if ( ! ty ) {
+        reporter->Warning("skipping serialization of event '%s' with unknown signature", deserialized.name().c_str());
         return {};
     }
     const auto& prototypes = ty->Prototypes();
     if ( prototypes.empty() ) {
+        reporter->Warning("could not get prototype for event '%s'", deserialized.name().c_str());
         return {};
     }
     const auto& sig = prototypes[0];
     const auto& arguments = sig.args;
     if ( ! arguments ) {
+        reporter->Warning("could not get prototype for event '%s'", deserialized.name().c_str());
         return {};
     }
 
@@ -82,7 +91,8 @@ std::optional<Event> ProtobufClusterEventSerializer::UnserializeEvent(byte_buffe
     for ( auto i = 0; i < arguments->NumFields(); ++i ) {
         auto type_ = arguments->GetFieldType(i);
         if ( ! type_ ) {
-            arguments->Print();
+            reporter->Warning("could not get argument type for field %d for event '%s'", i,
+                              deserialized.name().c_str());
             return {};
         }
 
