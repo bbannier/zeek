@@ -4,6 +4,7 @@
 
 #include <string_view>
 
+#include "zeek/Desc.h"
 #include "zeek/EventRegistry.h"
 #include "zeek/Func.h"
 #include "zeek/IPAddr.h"
@@ -143,8 +144,10 @@ bool ProtobufClusterLogSerializer::SerializeLogWrite(byte_buffer& buf, const log
 
 std::optional<logging::detail::LogWriteBatch> ProtobufClusterLogSerializer::UnserializeLogWrite(byte_buffer_span buf) {
     zeek::protobuf::LogWriteBatch proto;
-    if ( ! proto.ParseFromArray(buf.data(), buf.size()) )
+    if ( ! proto.ParseFromArray(buf.data(), buf.size()) ) {
+        reporter->Warning("unable to deserialize log record");
         return {};
+    }
 
     static const auto& stream_id_type = zeek::id::find_type<zeek::EnumType>("Log::ID");
     static const auto& writer_id_type = zeek::id::find_type<zeek::EnumType>("Log::Writer");
@@ -158,8 +161,10 @@ std::optional<logging::detail::LogWriteBatch> ProtobufClusterLogSerializer::Unse
         writer_id = writer_id_type->GetEnumVal(id);
 
     auto* columns = log_mgr->StreamColumns(stream_id.get());
-    if ( ! columns )
+    if ( ! columns ) {
+        reporter->Warning("unable to get schema for log record '%s'", proto.header().stream().c_str());
         return {};
+    }
 
     logging::detail::LogWriteHeader header{stream_id, writer_id, proto.header().filter(), proto.header().path()};
 
@@ -270,7 +275,9 @@ std::optional<logging::detail::LogWriteBatch> ProtobufClusterLogSerializer::Unse
                 case TYPE_TYPE:
                 case TYPE_ERROR:
                     // FIXME(bbannier):
-                    reporter->FatalError("unimplemented");
+                    ODesc d;
+                    ty->Describe(&d);
+                    reporter->FatalError("deserialization unimplemented for '%s'", d.Description());
             }
 
             data.push_back(std::move(lval));
@@ -278,7 +285,6 @@ std::optional<logging::detail::LogWriteBatch> ProtobufClusterLogSerializer::Unse
 
         batch.records.push_back(std::move(data));
     }
-
 
     return {std::move(batch)};
 }

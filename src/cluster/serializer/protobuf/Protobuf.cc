@@ -11,12 +11,14 @@
 #include "zeek/IntrusivePtr.h"
 #include "zeek/RE.h"
 #include "zeek/Reporter.h"
+#include "zeek/Type.h"
 #include "zeek/Val.h"
 #include "zeek/ZeekString.h"
 
 #include "zeek.pb.h"
 
 namespace zeek::protobuf {
+
 zeek::protobuf::Value serialize(const Val& val) {
     zeek::protobuf::Value value;
 
@@ -294,8 +296,10 @@ ValPtr deserialize(const zeek::protobuf::Value& value, const TypePtr& type_) {
                 auto idx = record_type->FieldOffset(name.c_str());
 
                 // Skip unknown fields.
-                if ( idx < 0 )
+                if ( idx < 0 ) {
+                    reporter->Warning("column '%s' unknown in '%s", name.c_str(), record_type->GetName().c_str());
                     continue;
+                }
 
                 val->Assign(idx, deserialize(value, record_type->GetFieldType(idx)));
             }
@@ -328,8 +332,11 @@ ValPtr deserialize(const zeek::protobuf::Value& value, const TypePtr& type_) {
             auto table = make_intrusive<TableVal>(IntrusivePtr{NewRef{}, table_type});
 
             for ( const auto& value : values ) {
-                if ( index_types.size() < value.keys_size() )
+                if ( index_types.size() < value.keys_size() ) {
+                    reporter->Warning("received more index column than expected: %d vs %zu", value.keys_size(),
+                                      index_types.size());
                     return {};
+                }
 
                 auto key_val = make_intrusive<ListVal>(TYPE_ANY);
 
@@ -347,4 +354,5 @@ ValPtr deserialize(const zeek::protobuf::Value& value, const TypePtr& type_) {
 
     return {};
 }
+
 } // namespace zeek::protobuf
