@@ -13,8 +13,43 @@ message LogWriteHeader {
   string writer = 2;
   string filter = 3;
   string path = 4;
+  repeated Field fields = 5;
 }
 
 message LogRecord {
   repeated Value fields = 1;
+}
+
+message Field {
+  string name = 1;
+  string secondary_name = 2;
+  Type type = 3;
+  Type subtype = 4;
+  bool is_optional = 5;
+}
+
+enum Type {
+  TYPE_VOID = 0;
+  TYPE_BOOL = 1;
+  TYPE_INT = 2;
+  TYPE_COUNT = 3;
+  TYPE_DOUBLE = 4;
+  TYPE_TIME = 5;
+  TYPE_INTERVAL = 6;
+  TYPE_STRING = 7;
+  TYPE_PATTERN = 8;
+  TYPE_ENUM = 9;
+  TYPE_PORT = 10;
+  TYPE_ADDR = 11;
+  TYPE_SUBNET = 12;
+  TYPE_ANY = 13;
+  TYPE_TABLE = 14;
+  TYPE_RECORD = 15;
+  TYPE_LIST = 16;
+  TYPE_FUNC = 17;
+  TYPE_FILE = 18;
+  TYPE_VECTOR = 19;
+  TYPE_OPAQUE = 20;
+  TYPE_TYPE = 21;
+  TYPE_ERROR = 22;
 }

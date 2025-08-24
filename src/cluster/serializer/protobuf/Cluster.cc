@@ -8,6 +8,7 @@
 #include "zeek/EventRegistry.h"
 #include "zeek/Func.h"
 #include "zeek/IPAddr.h"
+#include "zeek/Type.h"
 #include "zeek/logging/Manager.h"
 #include "zeek/logging/Types.h"
 #include "zeek/threading/SerialTypes.h"
@@ -20,6 +21,36 @@
 namespace zeek::cluster::protobuf {
 using zeek::protobuf::deserialize;
 using zeek::protobuf::serialize;
+
+TypeTag to_tag(const zeek::protobuf::Type& type) {
+    switch ( type ) {
+        case zeek::protobuf::TYPE_BOOL: return TYPE_BOOL;
+        case zeek::protobuf::TYPE_INT: return TYPE_INT;
+        case zeek::protobuf::TYPE_COUNT: return TYPE_COUNT;
+        case zeek::protobuf::TYPE_DOUBLE: return TYPE_DOUBLE;
+        case zeek::protobuf::TYPE_TIME: return TYPE_TIME;
+        case zeek::protobuf::TYPE_INTERVAL: return TYPE_INTERVAL;
+        case zeek::protobuf::TYPE_STRING: return TYPE_STRING;
+        case zeek::protobuf::TYPE_PATTERN: return TYPE_PATTERN;
+        case zeek::protobuf::TYPE_ENUM: return TYPE_ENUM;
+        case zeek::protobuf::TYPE_PORT: return TYPE_PORT;
+        case zeek::protobuf::TYPE_ADDR: return TYPE_ADDR;
+        case zeek::protobuf::TYPE_SUBNET: return TYPE_SUBNET;
+        case zeek::protobuf::TYPE_ANY: return TYPE_ANY;
+        case zeek::protobuf::TYPE_TABLE: return TYPE_TABLE;
+        case zeek::protobuf::TYPE_RECORD: return TYPE_RECORD;
+        case zeek::protobuf::TYPE_LIST: return TYPE_LIST;
+        case zeek::protobuf::TYPE_FUNC: return TYPE_FUNC;
+        case zeek::protobuf::TYPE_FILE: return TYPE_FILE;
+        case zeek::protobuf::TYPE_VECTOR: return TYPE_VECTOR;
+        case zeek::protobuf::TYPE_OPAQUE: return TYPE_OPAQUE;
+        case zeek::protobuf::TYPE_TYPE: return TYPE_TYPE;
+        case zeek::protobuf::TYPE_ERROR: return TYPE_ERROR;
+        case zeek::protobuf::TYPE_VOID: [[fallthrough]];
+        case zeek::protobuf::Type_INT_MIN_SENTINEL_DO_NOT_USE_: [[fallthrough]];
+        case zeek::protobuf::Type_INT_MAX_SENTINEL_DO_NOT_USE_: return TYPE_VOID;
+    }
+}
 
 bool ProtobufClusterEventSerializer::SerializeEvent(byte_buffer& buf, const Event& event) {
     zeek::protobuf::Event serialized;
@@ -127,6 +158,17 @@ bool ProtobufClusterLogSerializer::SerializeLogWrite(byte_buffer& buf, const log
     header_->set_filter(header.filter_name);
     header_->set_path(header.path);
 
+    auto* fields = header_->mutable_fields();
+    for ( const auto& f : header.fields ) {
+        auto* field = fields->Add();
+
+        field->set_name(f.name);
+        field->set_secondary_name(f.secondary_name);
+        field->set_type(zeek::protobuf::Type{static_cast<int>(f.type)});
+        field->set_subtype(zeek::protobuf::Type{static_cast<int>(f.subtype)});
+        field->set_is_optional(f.optional);
+    }
+
     for ( auto& r : records ) {
         auto* record = serialized.mutable_records()->Add();
 
@@ -176,7 +218,16 @@ std::optional<logging::detail::LogWriteBatch> ProtobufClusterLogSerializer::Unse
         return {};
     }
 
+    std::vector<threading::Field> fields; // The schema describing a log record.
+    for ( const auto& f : proto.header().fields() ) {
+        TypeTag type = to_tag(f.type());
+        TypeTag subtype;
+        fields.emplace_back(f.name().c_str(), f.secondary_name().c_str(), to_tag(f.type()), to_tag(f.subtype()),
+                            f.is_optional());
+    }
+
     logging::detail::LogWriteHeader header{stream_id, writer_id, proto.header().filter(), proto.header().path()};
+    header.fields = std::move(fields);
 
     logging::detail::LogWriteBatch batch{.header = std::move(header)};
 
