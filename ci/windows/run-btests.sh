@@ -63,4 +63,8 @@ if [ -d .tmp ]; then
     tar -czf tmp.tar.gz .tmp 2>/dev/null || true
 fi
 
+# Copy these into a location where CI hosts can collect all of the results from at once.
+mkdir -p ${CIRCLE_WORKING_DIRECTORY}/btest-results/$1
+cp btest-results.xml ${CIRCLE_WORKING_DIRECTORY}/btest-results/$1/results.xml
+
 exit ${result}
