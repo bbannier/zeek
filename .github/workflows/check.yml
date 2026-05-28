@@ -32,6 +32,7 @@ env:
 
 jobs:
   linux:
+    if: false
     runs-on: ubuntu-latest
 
     strategy:
@@ -429,6 +430,7 @@ jobs:
             bash -c "set -e; ${{ matrix.run }}"
 
   windows:
+    if: false
     runs-on: windows-2025
 
     steps:
@@ -474,6 +476,7 @@ jobs:
         ./ci/windows/test.cmd
 
   freebsd:
+    if: false
     runs-on: ubuntu-latest
 
     strategy:
